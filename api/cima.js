@@ -1,11 +1,15 @@
 export default async function handler(req, res) {
   try {
-    const page = req.query.pagina || 1;
+    const pagina = req.query.pagina || 1;
+
+    // ATC broncodilatadores
+    const atc = req.query.atc || 'R03';
 
     const url =
       'https://cima.aemps.es/cima/rest/medicamentos' +
       '?comerc=1' +
-      '&pagina=' + page;
+      '&atc=' + atc +
+      '&pagina=' + pagina;
 
     const r = await fetch(url, {
       headers: { 'Accept': 'application/json' }
@@ -25,3 +29,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Proxy error' });
   }
 }
+
