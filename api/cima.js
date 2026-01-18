@@ -2,9 +2,10 @@ export default async function handler(req, res) {
   try {
     const pagina = Number(req.query.pagina || 1);
 
+    // 1. Pedimos presentaciones respiratorias
     const url =
-      'https://cima.aemps.es/cima/rest/medicamentos' +
-      '?comerc=1&atc=R03&pagina=' + pagina;
+      'https://cima.aemps.es/cima/rest/presentaciones' +
+      '?vmp=R03&comerc=1&pagina=' + pagina;
 
     const r = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!r.ok) {
@@ -13,24 +14,31 @@ export default async function handler(req, res) {
 
     const data = await r.json();
 
-    const filtrados = (data.resultados || []).filter(m => {
-      if (!m.atcs) return false;
+    const BRONCODILATADORES = [
+      'SALBUTAMOL',
+      'FORMOTEROL',
+      'SALMETEROL',
+      'TERBUTALINA',
+      'INDACATEROL',
+      'TIOTROPIO',
+      'GLICOPIRRONIO',
+      'ACLIDINIO',
+      'UMECLIDINIO',
+      'IPRATROPIO'
+    ];
 
-      return m.atcs.some(a => {
-        const c = a.codigo;
-        return (
-          c.startsWith('R03A') &&     // broncodilatadores
-          !c.startsWith('R03BA') &&   // excluye CI
-          !c.startsWith('R03DC')      // excluye antileucotrienos
-        );
-      });
-    });
+    // 2. Filtramos por principio activo
+    const filtrados = (data.resultados || []).filter(p =>
+      BRONCODILATADORES.some(pa =>
+        p.pactivos?.toUpperCase().includes(pa)
+      )
+    );
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'public, max-age=3600');
 
     res.status(200).json({
-      version: 'BRONCODILATADORES_PROD_v2',
+      version: 'BRONCODILATADORES_PRESENTACIONES_OK',
       pagina,
       total: filtrados.length,
       resultados: filtrados
