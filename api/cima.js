@@ -23,7 +23,12 @@ export default async function handler(req, res) {
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.status(200).json(data);
+    res.status(200).json({
+  DEBUG_PROXY: 'SOLO_BRONCODILATADORES_v2',
+  pagina,
+  totalFiltrados: filtrados.length,
+  resultados: filtrados
+});
 
   } catch (e) {
     res.status(500).json({ error: 'Proxy error' });
